@@ -182,8 +182,12 @@ void CAutoStab::RunRage(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon, CUserCm
 			// Silent backstab
 			if (Vars::Triggerbot::Stab::Silent.Value)
 			{
-				Utils::FixMovement(pCmd, vAngleTo);
-				G::SilentTime = true;
+			// Correct player movement based on the desired view angle
+            Utils::FixMovement(pCmd, vAngleTo);
+
+            // Indicate that we are in a "Silent Time" state
+             G::SilentTime = true;
+
 			}
 
 			pCmd->viewangles = vAngleTo;
