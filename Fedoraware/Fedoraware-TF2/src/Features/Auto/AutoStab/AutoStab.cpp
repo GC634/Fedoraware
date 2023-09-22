@@ -21,11 +21,21 @@ bool CAutoStab::CanBackstab(CBaseEntity* pLocal, CBaseEntity* pTarget, CBaseComb
 
 CBaseEntity* CAutoStab::TraceMelee(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon, const Vec3& vViewAngles, const Vec3 vStart)
 {
-	const float flScale = std::min(1.0f, pLocal->m_flModelScale());
-	const float flRange = Utils::ATTRIB_HOOK_FLOAT((66.f * Vars::Triggerbot::Stab::Range.Value) * flScale, "melee_range_multiplier", pWeapon, 0, true);
-	const float flHull = 18.f * Utils::ATTRIB_HOOK_FLOAT(1.0f, "melee_bounds_multiplier", pWeapon, 0, true) * flScale;
+	// Calculate the model scale, ensuring it doesn't exceed 1.0
+const float flScale = std::min(1.0f, pLocal->m_flModelScale());
 
-	if (flRange <= 0.0f)
+// Calculate the effective melee range, taking into account modifiers
+const float baseRange = 66.0f * Vars::Triggerbot::Stab::Range.Value;
+const float rangeMultiplier = Utils::ATTRIB_HOOK_FLOAT(baseRange * flScale, "melee_range_multiplier", pWeapon, 0, true);
+const float flRange = std::max(rangeMultiplier, 0.0f);
+
+// Calculate the melee hull size, considering modifiers and the base value
+const float baseHull = 18.0f;
+const float hullMultiplier = Utils::ATTRIB_HOOK_FLOAT(baseHull * flScale, "melee_bounds_multiplier", pWeapon, 0, true);
+
+// Ensure the final hull size is at least the base value
+const float flHull = std::max(baseHull, hullMultiplier);
+
 	{
 		return nullptr;
 	}
