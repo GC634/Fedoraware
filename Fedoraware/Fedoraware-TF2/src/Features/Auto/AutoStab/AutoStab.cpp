@@ -51,9 +51,27 @@ const float flHull = std::max(baseHull, hullMultiplier);
 	Filter.pSkip = pLocal;
 	Utils::TraceHull(vTraceStart, vTraceEnd, { -flHull, -flHull, -flHull }, { flHull, flHull, flHull }, MASK_SOLID, &Filter, &Trace);
 	if (IsEntityValid(pLocal, Trace.entity))
-	{ return Trace.entity; }
+	{ return Trace.entity; }auto vForward = Vec3();
+	Math::AngleVectors(vViewAngles, &vForward);
+	Vec3 vTraceStart = vStart;
+	Vec3 vTraceEnd = (vTraceStart + (vForward * flRange));
 
-	return nullptr;
+	CGameTrace Trace = {};
+	CTraceFilterHitscan Filter = {};
+	Filter.pSkip = pLocal;
+	Utils::TraceHull(vTraceStart, vTraceEnd, { -flHull, -flHull, -flHull }, { flHull, flHull, flHull }, MASK_SOLID, &Filter, &Trace);
+	if (IsEntityValid(pLocal, Trace.entity))
+	{ return Trace.entity; }auto vForward = Vec3();
+	Math::AngleVectors(vViewAngles, &vForward);
+	Vec3 vTraceStart = vStart;
+	Vec3 vTraceEnd = (vTraceStart + (vForward * flRange));
+
+	CGameTrace Trace = {};
+	CTraceFilterHitscan Filter = {};
+	Filter.pSkip = pLocal;
+	Utils::TraceHull(vTraceStart, vTraceEnd, { -flHull, -flHull, -flHull }, { flHull, flHull, flHull }, MASK_SOLID, &Filter, &Trace);
+	if (IsEntityValid(pLocal, Trace.entity))
+	{ return Trace.entity; }
 }
 
 bool CAutoStab::IsEntityValid(CBaseEntity* pLocal, CBaseEntity* pEntity)
@@ -184,24 +202,24 @@ void CAutoStab::RunRage(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon, CUserCm
 
 void CAutoStab::Run(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon, CUserCmd* pCmd)
 {
-	if (!Vars::Triggerbot::Stab::Active.Value || !G::WeaponCanAttack || pWeapon->GetWeaponID() != TF_WEAPON_KNIFE || G::IsAttacking)
-	{
-		return;
-	}
+	// Check if triggerbot is active and conditions for triggering are met
+if (Vars::Triggerbot::Stab::Active.Value && G::WeaponCanAttack && pWeapon->GetWeaponID() == TF_WEAPON_KNIFE && !G::IsAttacking)
+{
+    // Execute the appropriate mode based on settings
+    if (Vars::Triggerbot::Stab::RageMode.Value)
+    {
+        RunRage(pLocal, pWeapon, pCmd);
+    }
+    else
+    {
+        RunLegit(pLocal, pWeapon, pCmd);
+    }
 
-	if (Vars::Triggerbot::Stab::RageMode.Value)
-	{
-		RunRage(pLocal, pWeapon, pCmd);
-	}
-	else
-	{
-		RunLegit(pLocal, pWeapon, pCmd);
-	}
+    // Check if the IN_ATTACK button is pressed
+    if (pCmd->buttons & IN_ATTACK)
+    {
+        G::IsAttacking = true;
+    }
 
-	if (pCmd->buttons & IN_ATTACK)
-	{
-		G::IsAttacking = true;
-	}
-
-	G::AutoBackstabRunning = true;
+    G::AutoBackstabRunning = true;
 }
