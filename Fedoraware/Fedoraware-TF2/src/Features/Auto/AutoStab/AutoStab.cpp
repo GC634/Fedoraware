@@ -35,8 +35,8 @@ const float hullMultiplier = Utils::ATTRIB_HOOK_FLOAT(baseHull * flScale, "melee
 
 // Ensure the final hull size is at least the base value
 const float flHull = std::max(baseHull, hullMultiplier);
+  
         if (flRange <= 0.0f)
-		
 	{
 		return nullptr;
 	}
