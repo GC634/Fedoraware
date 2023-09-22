@@ -1,90 +1,82 @@
 #pragma once
 #include "../Feature.h"
 
-#pragma warning ( disable : 4091 )
+#pragma warning(disable: 4091)
 
-class CIncomingSequence
-{
+class IncomingSequence {
 public:
-	int InReliableState;
-	int SequenceNr;
-	float CurTime;
+    int inReliableState;
+    int sequenceNr;
+    float curTime;
 
-	CIncomingSequence(int inState, int seqNr, float time)
-	{
-		InReliableState = inState;
-		SequenceNr = seqNr;
-		CurTime = time;
-	}
+    IncomingSequence(int inState, int seqNr, float time) {
+        inReliableState = inState;
+        sequenceNr = seqNr;
+        curTime = time;
+    }
 };
 
-using BoneMatrixes = struct
-{
-	float BoneMatrix[128][3][4];
+using BoneMatrices = struct {
+    float boneMatrix[128][3][4];
 };
 
-struct TickRecord
-{
-	float flSimTime = 0.f;
-	float flCreateTime = 0.f;
-	int iTickCount = 0;
-	bool bOnShot = false;
-	BoneMatrixes BoneMatrix{};
-	Vec3 vOrigin = {};
-	Vec3 vAngles = {};
+struct TickRecord {
+    float simTime = 0.f;
+    float createTime = 0.f;
+    int tickCount = 0;
+    bool onShot = false;
+    BoneMatrices boneMatrix{};
+    Vec3 origin = {};
+    Vec3 angles = {};
 };
 
-enum class BacktrackMode
-{
-	ALL, //	iterates through every tick (slow probably)
-	LAST, // last
-	PREFERONSHOT, // prefers on shot records, last
+enum class BacktrackMode {
+    ALL,           // Iterates through every tick (may be slow)
+    LAST,          // Last tick
+    PREFERONSHOT   // Prefers on-shot records, otherwise last
 };
 
-class CBacktrack
-{
-	const Color_t BT_LOG_COLOUR{ 150, 0, 212, 255};
+class Backtrack {
+    const Color_t BT_LOG_COLOUR{ 150, 0, 212, 255 };
 
-//	logic
-	bool IsTracked(const TickRecord& record);
-	bool IsSimulationReliable(CBaseEntity* pEntity);
-	bool IsEarly(CBaseEntity* pEntity);
-	bool WithinRewindEx(const TickRecord& record, const float flCompTime);
-	//bool IsBackLagComped(CBaseEntity* pEntity);
+    // Logic
+    bool isTracked(const TickRecord& record);
+    bool isSimulationReliable(CBaseEntity* pEntity);
+    bool isEarly(CBaseEntity* pEntity);
+    bool withinRewindEx(const TickRecord& record, const float compTime);
 
-	//	utils
-	void CleanRecords();
-	void MakeRecords();
-	std::optional<TickRecord> GetHitRecord(CUserCmd* pCmd, CBaseEntity* pEntity, Vec3 vAngles, Vec3 vPos);
-	//	utils - fake latency
-	void UpdateDatagram();
-	float GetLatency();
+    // Utils
+    void cleanRecords();
+    void makeRecords();
+    std::optional<TickRecord> getHitRecord(CUserCmd* pCmd, CBaseEntity* pEntity, Vec3 vAngles, Vec3 vPos);
+    void updateDatagram();
+    float getLatency();
 
-	//	data
-	std::unordered_map<CBaseEntity*, std::deque<TickRecord>> mRecords;
-	std::unordered_map<int, bool> mDidShoot;
-	int iLastCreationTick = 0;
+    // Data
+    std::unordered_map<CBaseEntity*, std::deque<TickRecord>> records;
+    std::unordered_map<int, bool> didShoot;
+    int lastCreationTick = 0;
 
-	//	data - fake latency
-	std::deque<CIncomingSequence> dSequences;
-	float flLatencyRampup = 0.f;
-	int iLastInSequence = 0;
+    // Data - fake latency
+    std::deque<IncomingSequence> sequences;
+    float latencyRampup = 0.f;
+    int lastInSequence = 0;
 
 public:
-	bool WithinRewind(const TickRecord& record, const float flDelay = 0.f);
-	bool CanHitOriginal(CBaseEntity* pEntity);
-	void PlayerHurt(CGameEvent* pEvent); //	called on player_hurt event
-	void ResolverUpdate(CBaseEntity* pEntity);	//	omfg
-	void Restart(); //	called whenever lol
-	void FrameStageNotify(); //	called in FrameStageNotify
-	void ReportShot(int iIndex);
-	std::deque<TickRecord>* GetRecords(CBaseEntity* pEntity);
-	std::optional<TickRecord> Aimbot(CBaseEntity* pEntity, BacktrackMode iMode, int nHitbox);
-	std::optional<TickRecord> GetLastRecord(CBaseEntity* pEntity);
-	std::optional<TickRecord> GetFirstRecord(CBaseEntity* pEntity);
-	std::optional<TickRecord> Run(CUserCmd* pCmd); //	returns a valid record
-	void AdjustPing(INetChannel* netChannel); //	blurgh
-	bool bFakeLatency = false;
+    bool withinRewind(const TickRecord& record, const float delay = 0.f);
+    bool canHitOriginal(CBaseEntity* pEntity);
+    void playerHurt(CGameEvent* pEvent); // Called on player_hurt event
+    void resolverUpdate(CBaseEntity* pEntity); // Omitted 'omfg' for clarity
+    void restart(); // Called whenever
+    void frameStageNotify(); // Called in FrameStageNotify
+    void reportShot(int index);
+    std::deque<TickRecord>* getRecords(CBaseEntity* pEntity);
+    std::optional<TickRecord> aimbot(CBaseEntity* pEntity, BacktrackMode mode, int hitbox);
+    std::optional<TickRecord> getLastRecord(CBaseEntity* pEntity);
+    std::optional<TickRecord> getFirstRecord(CBaseEntity* pEntity);
+    std::optional<TickRecord> run(CUserCmd* pCmd); // Returns a valid record
+    void adjustPing(INetChannel* netChannel); // Blah
+    bool fakeLatency = false;
 };
 
-ADD_FEATURE(CBacktrack, Backtrack)
+ADD_FEATURE(Backtrack, Backtrack)
