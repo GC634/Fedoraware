@@ -52,12 +52,12 @@ void CAutoQueue::Run()
 		// Keep track of whether the player was connected last frame.
 		static bool lastConnect = false;
 
-		// If the player has match invites and is not connected to a server, set sv_cheats to 1, fps_max to 1, and host_timescale to 25.
+		// If the player has match invites and is not connected to a server, set sv_cheats to 1, fps_max to 5, and host_timescale to 20.
 		if (I::TFGCClientSystem->GetNumMatchInvites() > 0 && !I::EngineClient->IsConnected())
 		{
 			sv_cheats->SetValue(1);
-			fps_max->SetValue(1);
-			host_timescale->SetValue(25);
+			fps_max->SetValue(5);
+			host_timescale->SetValue(20);
 		}
 		// If the player has a live match and is not connected to a server, and was connected last frame, join the match.
 		else if (I::TFGCClientSystem->BHaveLiveMatch() && !I::EngineClient->IsConnected() && lastConnect)
