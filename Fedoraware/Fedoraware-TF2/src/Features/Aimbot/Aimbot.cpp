@@ -20,11 +20,13 @@ bool CAimbot::ShouldRun(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon)
 	// Don't run if we are frozen in place.
 	if (G::Frozen) { return false; }
 
+	// Check if we can shoot.
 	if (!Vars::Aimbot::Global::DontWaitForShot.Value && (!G::IsAttacking && !G::WeaponCanAttack) && G::CurWeaponType != EWeaponType::MELEE)
 	{
 		return false;
-	}	//	don't run if we can't shoot (should stop unbearable dt lag)
+	}
 
+	// Check if we are alive and not in a state where we cannot aimbot.
 	if (!pLocal->IsAlive()
 		|| pLocal->IsTaunting()
 		|| pLocal->IsBonked()
@@ -36,12 +38,12 @@ bool CAimbot::ShouldRun(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon)
 		return false;
 	}
 
-	//	0 damage weapons that we still want to aimbot with
-	if (pWeapon->GetWeaponID() == TF_WEAPON_BUILDER) {
+	// Check if the weapon we are using can deal damage.
+	if (pWeapon->GetWeaponID() == TF_WEAPON_BUILDER)
+	{
 		return true;
 	}
 
-	//	weapon data check for null damage
 	if (CTFWeaponInfo* sWeaponInfo = pWeapon->GetTFWeaponInfo())
 	{
 		WeaponData_t sWeaponData = sWeaponInfo->m_WeaponData[0];
@@ -56,25 +58,31 @@ bool CAimbot::ShouldRun(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon)
 
 void CAimbot::Run(CUserCmd* pCmd)
 {
-	//G::CurrentTargetIdx = 0;
+	// Reset the aimbot state.
+	G::CurrentTargetIdx = 0;
 	G::PredictedPos = Vec3();
 	G::HitscanRunning = false;
 	G::HitscanSilentActive = false;
 	G::AimPos = Vec3();
 
+	// Don't run the aimbot if we are moving or accelerating quickly.
 	if (F::Misc.bMovementStopped || F::Misc.bFastAccel) { return; }
 
+	// Get the local player and weapon entities.
 	const auto pLocal = g_EntityCache.GetLocal();
 	const auto pWeapon = g_EntityCache.GetWeapon();
 	if (!pLocal || !pWeapon) { return; }
 
+	// Don't run the aimbot if we cannot.
 	if (!ShouldRun(pLocal, pWeapon)) { return; }
 
+	// Check if we are using the sandvich.
 	if (SandvichAimbot::bIsSandvich = SandvichAimbot::IsSandvich())
 	{
 		G::CurWeaponType = EWeaponType::HITSCAN;
 	}
 
+	// Run the appropriate aimbot function based on the weapon type.
 	switch (G::CurWeaponType)
 	{
 		case EWeaponType::HITSCAN:
