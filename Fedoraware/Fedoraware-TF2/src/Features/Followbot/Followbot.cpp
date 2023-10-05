@@ -1,10 +1,10 @@
 #include "Followbot.h"
 
 /*
- * This followbot is very basic and could need some improvements.
- * But it's better than nothing...
- * - lnx00
- */
+* This followbot is very basic and could need some improvements.
+* But it's better than nothing...
+* - lnx00
+*/
 
 constexpr float NODE_DISTANCE = 20.f;
 
@@ -28,13 +28,7 @@ void CFollowbot::OptimizePath(CBaseEntity* pLocal)
 		auto& currentNode = PathNodes[i];
 		if (pLocal->GetAbsOrigin().Dist2D(currentNode.Location) < NODE_DISTANCE)
 		{
-			int garbageNodes = static_cast<int>(i);
-			while (garbageNodes > 1 && !PathNodes.empty())
-			{
-				PathNodes.pop_front();
-				garbageNodes--;
-			}
-
+			PathNodes.erase(PathNodes.begin(), PathNodes.begin() + i);
 			return;
 		}
 	}
@@ -122,32 +116,3 @@ void CFollowbot::Run(CUserCmd* pCmd)
 		{
 			PathNodes.pop_front();
 		}
-
-		OptimizePath(pLocal);
-	}
-}
-
-void CFollowbot::Reset()
-{
-	CurrentTarget = nullptr;
-	PathNodes.clear();
-}
-
-void CFollowbot::Draw()
-{
-	if (!Vars::Misc::Followbot::Enabled.Value || !CurrentTarget) { return; }
-	if (PathNodes.size() < 2) { return; }
-
-	const std::deque<PathNode> tmpPath = PathNodes;
-	for (size_t i = 1; i < tmpPath.size(); i++)
-	{
-		auto& currentNode = tmpPath[i];
-		auto& lastNode = tmpPath[i - 1];
-
-		Vec3 vcScreen, vlScreen;
-		if (Utils::W2S(currentNode.Location, vcScreen) && Utils::W2S(lastNode.Location, vlScreen))
-		{
-			g_Draw.Line(vlScreen.x, vlScreen.y, vcScreen.x, vcScreen.y, { 255, 255, 255, 255 });
-		}
-	}
-}
